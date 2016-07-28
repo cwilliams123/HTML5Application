@@ -140,10 +140,26 @@ and open the template in the editor.
         </div>
         
         
-        <div> <input type="button" value=" Start " id="startButton" onclick ="startStop()"/> </div>
+        <div class = "verticalSpace"> <input type="button" value=" Start " id="startButton" onclick ="startStop()"/> </div>
+        
+        <!--<div> <textarea id ="inputTextToSave" cols = "80" rows ="25"></textarea></div>-->
+        <!--<div>
+            Filename to Save As: <input id="inputFileNameToSaveAs">
+            <button onclick="saveTextAsFile()">Save Text to File</button>
+        </div>
+        <div> 
+            Select a file to load: <input type ="file" id ="fileToLoad">
+            <button onclick="loadFileAsText()">Load File As Text</button>
+        </div>-->
+        
         <p id ="show"> lala </p>
+        
+        <!--<button id="create" onclick = "downloadFile()">Create file</button>
+        <a id="downloadlink">Download</a>-->
+        
         <script> 
              //variables from html
+             
             
             var canvas = document.getElementById("theCanvas");
             var context = canvas.getContext("2d");
@@ -162,12 +178,9 @@ and open the template in the editor.
             var boundarySelect = document.getElementById("boundarySelect");
             var showSpinCheck = document.getElementById("showSpin");
             var SettleBInput = document.getElementById("SettleB");
+            var show = document.getElementById("show");
             
             
-            var lattice  = {
-                show : document.getElementById("show"),
-                number : 12
-            };
             
             
             //laalalalalalalalalala
@@ -285,12 +298,98 @@ and open the template in the editor.
                           [3.00, -2.0, 1, 1, 1, 1]]; //test
                       
             
-
+            //var textToSave;
             
             simulate();
+            
+            /* s.toString = function() {
+                 var string = "";
+                 for(var i = 0; i<Size; i++){
+                     for(var j = 0; j<Size; j++){
+                         string += s[i][j];
+                         string += ",";
+                     }
+                     string += ".";
+                 }
+                 return string;
+             };
            
+            function saveTextAsFile()
+            {   
+                textToSave = s.toString();
+                var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+                var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+                var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+
+                var downloadLink = document.createElement("a");
+                downloadLink.download = fileNameToSaveAs;
+                downloadLink.innerHTML = "Download File";
+                downloadLink.href = textToSaveAsURL;
+                downloadLink.onclick = destroyClickedElement;
+                downloadLink.style.display = "none";
+                document.body.appendChild(downloadLink);
+
+                downloadLink.click();
+            }
+
+            function destroyClickedElement(event)
+            {
+                    document.body.removeChild(event.target);
+            }
+
+            function loadFileAsText()
+            {
+                var fileToLoad = document.getElementById("fileToLoad").files[0];
+
+                var fileReader = new FileReader();
+                fileReader.onload = function(fileLoadedEvent) 
+                {
+                    var textFromFileLoaded = fileLoadedEvent.target.result;
+                    show.innerHTML = textFromFileLoaded;
+                    //recreateLattice(textFromFileLoaded);
+                };
+                fileReader.readAsText(fileToLoad, "UTF-8");
+            } */
             
+           /*
             
+            function recreateLattice(text){
+                var i;
+                while(i < text.length){
+                    
+                }
+            }
+    */
+            /*
+            function downloadFile() {
+                var textFile = null,
+                makeTextFile = function (text) {
+                    var data = new Blob([text], {type: 'text/plain'});
+
+                    // If we are replacing a previously generated file we need to
+                    // manually revoke the object URL to avoid memory leaks.
+                    if (textFile !== null) {
+                      window.URL.revokeObjectURL(textFile);
+                    }
+
+                    textFile = window.URL.createObjectURL(data);
+
+                    return textFile;
+                  };
+
+
+                  var create = document.getElementById('create'),
+                    textbox = document.getElementById('textbox'),
+                    text = "lalalalala";
+
+                  create.addEventListener('click', function () {
+                    var link = document.getElementById('downloadlink');
+                    link.href = makeTextFile(text);
+                    link.style.display = 'block';
+                  }, false);
+                }
+*/
+
             function simulate(){
                 if(running){
                     if(metropolis)
@@ -477,7 +576,7 @@ and open the template in the editor.
             }
             
             //returns the dipole to the left of s[i][j] taking into account boundary conditions
-            function getLeft(i, j, s, Size){
+            function getLeft(i, j){
                 if (j == 0) {
                     if(pbc)
                         return s[i][Size -1];
@@ -917,12 +1016,12 @@ and open the template in the editor.
            //used in start button
             function startStop(){
                 running = !running;
-                if(running){
+                if(running)
                     startButton.value = " Pause ";
-                }   
-                else{
+                 
+                else
                     startButton.value = "Resume";
-                }
+                
             }
             
         </script>
