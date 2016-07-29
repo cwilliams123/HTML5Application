@@ -80,8 +80,9 @@ and open the template in the editor.
                 <option>Test</option>
             </select>
             <p> <b> Nanotube Settings: </b></p>
-            <div>Thickness: <input type ="number" id ="nThicknessInput" value = "40" min = "0"> </div>
-            <div>Diameter: <input type ="number" id ="nDiameterInput" value = "150" min = "0"> </div>
+            <div>Thickness: <input type ="number" id ="nThicknessInput" value = "40" min = "0" max = "150"> </div>
+            <div>Diameter: <input type ="number" id ="nDiameterInput" value = "150" min = "0" max = "298"> </div>
+            <div>Height: <input type ="number" id ="nHeightInput" value ="300" min ="0" max ="300"> </div>
             <div>Spin: <select id = "nSpinSelect">
                     <option>Positive</option>
                     <option>Negative</option>
@@ -101,7 +102,7 @@ and open the template in the editor.
                 <option>Bipartite</option>
             </select>
             &nbsp; &nbsp;
-            Size: <select id="sizeSelect" onchange = "resize()">
+            Size: <select id="sizeSelect" onchange = "resizeAndReset()">
                     <option>3</option>
                     <option>4</option>
                     <option>5</option>
@@ -142,20 +143,19 @@ and open the template in the editor.
         
         <div class = "verticalSpace"> <input type="button" value=" Start " id="startButton" onclick ="startStop()"/> </div>
         
-        <!--<div> <textarea id ="inputTextToSave" cols = "80" rows ="25"></textarea></div>-->
-        <!--<div>
+       
+        <div>
             Filename to Save As: <input id="inputFileNameToSaveAs">
-            <button onclick="saveTextAsFile()">Save Text to File</button>
+            <button onclick="saveTextAsFile()">Save</button>
         </div>
         <div> 
             Select a file to load: <input type ="file" id ="fileToLoad">
-            <button onclick="loadFileAsText()">Load File As Text</button>
-        </div>-->
+            <button onclick="loadFileAsText()">Open</button>
+        </div>
         
-        <p id ="show"> lala </p>
+        <p id ="show"></p>
         
-        <!--<button id="create" onclick = "downloadFile()">Create file</button>
-        <a id="downloadlink">Download</a>-->
+        
         
         <script> 
              //variables from html
@@ -166,6 +166,7 @@ and open the template in the editor.
             var presetSelect = document.getElementById("presetSelect");
             var nThicknessInput = document.getElementById("nThicknessInput");
             var nDiameterInput = document.getElementById("nDiameterInput");
+            var nHeightInput = document.getElementById("nHeightInput");
             var nSpinSelect = document.getElementById("nSpinSelect");
             var spfReadout = document.getElementById("spfReadout");
             var spfSlider = document.getElementById("spfSlider");
@@ -179,13 +180,6 @@ and open the template in the editor.
             var showSpinCheck = document.getElementById("showSpin");
             var SettleBInput = document.getElementById("SettleB");
             var show = document.getElementById("show");
-            
-            
-            
-            
-            //laalalalalalalalalala
-            //laaaaaaaaaaaaa
-            
             
             
             var T = Number(tempInput.value);
@@ -298,25 +292,61 @@ and open the template in the editor.
                           [3.00, -2.0, 1, 1, 1, 1]]; //test
                       
             
-            //var textToSave;
+           
+            ComputeE();
+            resetData();
+            DisplayData();
             
             simulate();
             
-            /* s.toString = function() {
+            
+           
+             
+             function makeSettingsString() {
+                 var string =  "" + T + ", " + Bfield + ", " + magnetSelect.selectedIndex + ", " + sizeSelect.selectedIndex + ", " + algorithmSelect.selectedIndex + ", " + boundarySelect.selectedIndex + ", " + InnerLoopCount + ", " +  Ecurrent + ", " + EsquaredTotal + ", " + Etotal + ", " + Mcurrent + ", " + MsquaredTotal + ", " + Mtotal;
+                 return string;
+                 
+             }
+             
+             function makeSpinArrayString() {
                  var string = "";
-                 for(var i = 0; i<Size; i++){
+                 for(var i = 0; i<Size; i++){ 
+                     string += "[";
                      for(var j = 0; j<Size; j++){
-                         string += s[i][j];
-                         string += ",";
+                         if(j<Size-1)
+                            string += "\"" + s[i][j] + "\", ";
+                         else
+                             string += "\"" + s[i][j] + "\"";
                      }
-                     string += ".";
+                     if(i<Size - 1)
+                        string += "],";
+                     else
+                         string += "]";
                  }
                  return string;
-             };
+             }
+             
+             function makeBfieldArrayString() {
+                 var string = "";
+                 for(var i = 0; i<Size; i++){ 
+                     string += "[";
+                     for(var j = 0; j<Size; j++){
+                         if(j<Size-1)
+                            string += "\"" + BfieldM[i][j] + "\", ";
+                         else
+                             string += "\"" + BfieldM[i][j] + "\"";
+                     }
+                     if(i<Size - 1)
+                        string += "],";
+                     else
+                         string += "]";
+                 }
+                 return string;
+             }
            
             function saveTextAsFile()
             {   
-                textToSave = s.toString();
+                var textToSave = makeSettingsString() + makeSpinArrayString() + "X"+ makeBfieldArrayString();
                 var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
                 var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
                 var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
@@ -330,6 +360,7 @@ and open the template in the editor.
                 document.body.appendChild(downloadLink);
 
                 downloadLink.click();
+                //show.innerHTML = makeSettingsString();
             }
 
             function destroyClickedElement(event)
@@ -345,50 +376,55 @@ and open the template in the editor.
                 fileReader.onload = function(fileLoadedEvent) 
                 {
                     var textFromFileLoaded = fileLoadedEvent.target.result;
-                    show.innerHTML = textFromFileLoaded;
-                    //recreateLattice(textFromFileLoaded);
+                    //show.innerHTML = textFromFileLoaded;
+                    recreateLattice(textFromFileLoaded);
                 };
                 fileReader.readAsText(fileToLoad, "UTF-8");
-            } */
+            } 
             
-           /*
+           
             
             function recreateLattice(text){
-                var i;
-                while(i < text.length){
-                    
-                }
-            }
-    */
-            /*
-            function downloadFile() {
-                var textFile = null,
-                makeTextFile = function (text) {
-                    var data = new Blob([text], {type: 'text/plain'});
-
-                    // If we are replacing a previously generated file we need to
-                    // manually revoke the object URL to avoid memory leaks.
-                    if (textFile !== null) {
-                      window.URL.revokeObjectURL(textFile);
+                var settingsText = text.substring(0, text.indexOf("["));
+                var arrayText = text.substring(text.indexOf("["), text.indexOf("X"));
+                var BfieldText = text.substring(text.indexOf("X") + 1);
+                //show.innerHTML = arrayText;
+                changeSettings(settingsText);
+                s = JSON.parse("[" + arrayText + "]");
+                BfieldM = JSON.parse("[" + BfieldText + "]");
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        s[i][j] = Number(s[i][j]);
+                        BfieldM[i][j] = Number(BfieldM[i][j]); //make sure the strings convert to numbers
+                        colorSquare(i,j);
                     }
-
-                    textFile = window.URL.createObjectURL(data);
-
-                    return textFile;
-                  };
-
-
-                  var create = document.getElementById('create'),
-                    textbox = document.getElementById('textbox'),
-                    text = "lalalalala";
-
-                  create.addEventListener('click', function () {
-                    var link = document.getElementById('downloadlink');
-                    link.href = makeTextFile(text);
-                    link.style.display = 'block';
-                  }, false);
                 }
-*/
+                
+            }
+            
+            function changeSettings(text){
+                var settings = JSON.parse("[" + text +"]");
+                tempInput.value = settings[0];
+                changeT();
+                BfieldInput.value = settings[1];
+                changeBfield();
+                magnetSelect.selectedIndex = settings[2];
+                changeMagnet();
+                sizeSelect.selectedIndex = settings[3];
+                resize();
+                algorithmSelect.selectedIndex = settings[4];
+                changeAlgorithm();
+                boundarySelect.selectedIndex = settings[5];
+                changeBoundaries();
+                InnerLoopCount = settings[6];
+                Ecurrent = settings[7];
+                EsquaredTotal = settings[8];
+                Etotal = settings[9];
+                Mcurrent = settings[10];
+                MsquaredTotal = settings[11];
+                DisplayData();
+            }
+           
 
             function simulate(){
                 if(running){
@@ -486,7 +522,7 @@ and open the template in the editor.
             
             //changes data display of energy and magnitization
             function DisplayData(){
-                var Steps, Eav, SigmaE, Mav, SigmaM;
+                var Steps, Eav, Esquaredav, SigmaE, Mav, Msquaredav, SigmaM;
                 if(InnerLoopCount == 0){
                     Steps = 0;
                     Eav = 0.0;
@@ -500,7 +536,7 @@ and open the template in the editor.
                     else
                         Steps = InnerLoopCount*StepsPerLoop; //can't round off to hundreths place if stepsPerLoop is below 100
                     Eav = Etotal/InnerLoopCount;
-                    Esquaredav = EsquaredTotal/InnerLoopCount;
+                    var Esquaredav = EsquaredTotal/InnerLoopCount;
                     SigmaE = Math.sqrt(Esquaredav-(Eav*Eav));
                     Mav = Mtotal/InnerLoopCount;
                     Msquaredav = MsquaredTotal/InnerLoopCount;
@@ -749,7 +785,7 @@ and open the template in the editor.
                     else{
                         var upColor; //boolean of whether or not square will be colored in color assigned to "up" spin or positive 1
                         //basically if the magnet setting isn't bipartite the color will agree with the spin but if it is bipartite the color might not
-                        if((magnetSelect.value == "Bipartite") && (i%2 == j%2)){
+                        if((magnetSelect.selectedIndex == 2) && (i%2 == j%2)){
                             if(s[i][j] == 1)
                                 upColor = false;
                             else
@@ -794,6 +830,15 @@ and open the template in the editor.
                         }
                         context.fillRect(j*SquareWidth, i*SquareWidth, SquareWidth,SquareWidth);
             } 
+            
+            function colorAll(){
+                for(var i = 0; i < Size; i++)
+                {
+                    for(var j = 0; j < Size; j++){
+                        colorSquare(i,j);
+                    }
+                }
+            }
             //these functions all have to do with the buttons in the html and are organized by their order of appearance from top to bottom, left to right
             
             //resets tables (except for current energy and magnetization)
@@ -826,6 +871,7 @@ and open the template in the editor.
             function makeNanotube(){
                 var nThickness = Number(nThicknessInput.value);
                 var nDiameter = Number(nDiameterInput.value);
+                var nHeight = Number(nHeightInput.value);
                 if(nSpinSelect.selectedIndex == 0)
                     nSpin = 1;
                 else
@@ -836,20 +882,23 @@ and open the template in the editor.
                 var rightIndex = leftIndex + (nThickness - 1) + (nDiameter + 1);
                 
                 
-                for(var i = 0; i < Size; i++){
+                for(var i = 0; i < nHeight; i++){
                     for(var j = leftIndex; j < leftIndex + nThickness; j++){
                         s[i][j] *= -1;
                         BfieldM[i][j] = 10 * nSpin;
                         colorSquare(i, j);
                         }
                 }
-                for(var i = 0; i < Size; i++){
+                for(var i = 0; i < nHeight; i++){
                     for(var j = rightIndex; j < rightIndex + nThickness; j++){
                         s[i][j] *= -1;
                         BfieldM[i][j] = 10 * nSpin;
                         colorSquare(i, j);
                         }
                 }
+                ComputeE();
+                resetData();
+                DisplayData();
            }
            
            function changeSpf(){
@@ -861,6 +910,8 @@ and open the template in the editor.
                 T = Number(tempInput.value);
                 if(T==0)
                     zeroT = true;
+                else
+                    zeroT = false;
                 
             }
             function changeBfield(){
@@ -868,10 +919,13 @@ and open the template in the editor.
             }
             
             function changeMagnet(){
-                if(magnetSelect.selectedIndex == 0)
+                if(magnetSelect.selectedIndex == 0) //if it's ferromagnetic
                     CouplingConstant = 1;
                 else
                     CouplingConstant = -1;
+                colorAll(); //have to recolor all the squares if its been change from or to bipartite
+                    
+                
             }
             
             //computes total energy from scratch--used in resize
@@ -927,14 +981,22 @@ and open the template in the editor.
 				colorSquare(iNew, jNew);
 			}
 		}
-		ComputeE();
-                resetData();
-                DisplayData();
-                nDiameterInput.value = Math.floor(Size/2); //makes sure the nanotube isn't bigger than the lattice
+                
+                nDiameterInput.value = Math.floor(Size/2); //makes sure the default nanotube isn't bigger than the lattice
                 nThicknessInput.value = Math.floor(Size/8) + 1;
+                nHeightInput.value = Math.floor(Size/2);
                 nDiameterInput.max = Size - 2; //makes sure you can't make a nanotube that's bigger than the lattice
                 nThicknessInput.max = Math.floor(Size/2);
+                nHeightInput.max = Size;
+                
 	}
+        
+            function resizeAndReset(){
+                resize();
+                resetData();
+		ComputeE();
+                DisplayData();
+            }
             
             
             
@@ -947,27 +1009,26 @@ and open the template in the editor.
                 ApbcBothDirections = false; 
                 ApbcOneDirection = false; 
                 PlusMinus = false; 
-            //only set them true if select says they are
-            if(boundarySelect.selectedIndex == 0)
-                pbc = true; 
+                //only set them true if select says they are
+                if(boundarySelect.selectedIndex == 0)
+                    pbc = true; 
 
-            else if(boundarySelect.selectedIndex == 1)
-                ApbcBothDirections = true; 
-            
-            else if(boundarySelect.selectedIndex == 2)
-                ApbcOneDirection = true; 
-            
-            else if(boundarySelect.selectedIndex == 3)
-                PlusMinus = true;
+                else if(boundarySelect.selectedIndex == 1)
+                    ApbcBothDirections = true; 
+
+                else if(boundarySelect.selectedIndex == 2)
+                    ApbcOneDirection = true; 
+
+                else if(boundarySelect.selectedIndex == 3)
+                    PlusMinus = true;
+                ComputeE();
+                resetData();
+                DisplayData();
             }
             
             function changeShowSpin(){
                 showSpin = !showSpin;
-                for(i = 0; i < Size; i++){
-                    for(j = 0; j<Size; j++){
-                        colorSquare(i,j);
-                    }
-                }
+                colorAll();
             }
             
             function changeSettleB(){
@@ -992,7 +1053,9 @@ and open the template in the editor.
                             context.putImageData(image, 0, 0);
                     }
 
+                ComputeE();
                 resetData();
+                DisplayData();
             }
             //colors all squares opposite of first color
             function makeAllOneColor(){
@@ -1008,7 +1071,9 @@ and open the template in the editor.
                        context.putImageData(image, 0,0);
                    }
                }
-               resetData();
+                ComputeE();
+                resetData();
+                DisplayData();
            }
            
            
