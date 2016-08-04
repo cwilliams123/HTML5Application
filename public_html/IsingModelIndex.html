@@ -80,8 +80,8 @@ and open the template in the editor.
                 <option>Test</option>
             </select>
             <p> <b> Nanotube Settings: </b></p>
-            <div>Thickness: <input type ="number" id ="nThicknessInput" value = "40" min = "0" max = "150"> </div>
-            <div>Diameter: <input type ="number" id ="nDiameterInput" value = "150" min = "0" max = "298"> </div>
+            <div>Thickness: <input type ="number" id ="nThicknessInput"> </div>
+            <div>Diameter: <input type ="number" id ="nDiameterInput"> </div>
             <div>Height: <input type ="number" id ="nHeightInput" value ="300" min ="0" max ="300"> </div>
             <div>Spin: <select id = "nSpinSelect">
                     <option>Positive</option>
@@ -102,7 +102,7 @@ and open the template in the editor.
                 <option>Bipartite</option>
             </select>
             &nbsp; &nbsp;
-            Size: <select id="sizeSelect" onchange = "resizeAndReset()">
+            Size: <select id="sizeSelect" onchange = "resize()">
                     <option>3</option>
                     <option>4</option>
                     <option>5</option>
@@ -199,9 +199,10 @@ and open the template in the editor.
 
 
             //size
-            sizeSelect.selectedIndex = 11;//default is 250
+            sizeSelect.selectedIndex = 9;//default is 100
             var Size = Number(sizeSelect.options[sizeSelect.selectedIndex].text);  // dimensions of lattice
-            var SquareWidth = canvas.width/Size*1.0; //size of each square determined by size of lattice
+            var SquareWidth = canvas.width/Size; //size of each square determined by size of lattice
+            changeNanotubeSettings();
             
             //algorithm
             algorithmSelect.selectedIndex = 0; //default is metropolis
@@ -261,6 +262,14 @@ and open the template in the editor.
             var running = false; //true when running
             var pixelGraphics = false; 
             
+            var BfieldM = new Array(Size);
+            for (var i = 0; i < Size; i++){
+                BfieldM[i] = new Array(Size);
+                for (var j = 0; j < Size; j++){
+                    BfieldM[i][j] = 0;
+                }
+            }
+            
             //sets a random 2D array of dipoles and colors them accordingly
             var s = new Array(Size); 
             for (var i = 0; i < Size; i++){
@@ -280,13 +289,7 @@ and open the template in the editor.
 
 
             //sets local magnetic field of all dipoles to zero initially
-            var BfieldM = new Array(Size);
-            for (var i = 0; i < Size; i++){
-                BfieldM[i] = new Array(Size);
-                for (var j = 0; j < Size; j++){
-                    BfieldM[i][j] = 0;
-                }
-            }
+            
             
             var presets = [[2.27, 0.0, 0, 4, 0, 0], //default
                           [3.00, -2.0, 1, 1, 1, 1]]; //test
@@ -395,6 +398,7 @@ and open the template in the editor.
                 for(var i = 0; i < Size; i++){
                     for(var j = 0; j < Size; j++){
                         s[i][j] = Number(s[i][j]);
+                        
                         BfieldM[i][j] = Number(BfieldM[i][j]); //make sure the strings convert to numbers
                         colorSquare(i,j);
                     }
@@ -411,7 +415,9 @@ and open the template in the editor.
                 magnetSelect.selectedIndex = settings[2];
                 changeMagnet();
                 sizeSelect.selectedIndex = settings[3];
-                resize();
+                Size = Number(sizeSelect.options[sizeSelect.selectedIndex].text);
+                SquareWidth = canvas.length/Size;
+                changeNanotubeSettings();
                 algorithmSelect.selectedIndex = settings[4];
                 changeAlgorithm();
                 boundarySelect.selectedIndex = settings[5];
@@ -632,6 +638,8 @@ and open the template in the editor.
                     }
                 
                 else 
+                    var x = j - 1;
+                    // = i + " " + x;
                     return s[i][j-1];
                 
             }
@@ -694,9 +702,10 @@ and open the template in the editor.
             $(document).ready(function(){
                 $("canvas").click(function(event){
                    var offSet = $(this).offset();
-                   var x = event.pageX - offSet.left,
-                       y = event.pageY - offSet.top;
-                   setSpin(x,y);
+                   var j = Math.floor((event.pageX - offSet.left)/SquareWidth),
+                       i = Math.floor((event.pageY - offSet.top)/SquareWidth);
+                       
+                   setSpin(i,j);
                 });
                 //for when the mouse is dragged, not just clicked
                 var mouseDown = false;
@@ -715,7 +724,20 @@ and open the template in the editor.
                     setSpin(oldI,oldJ);
                     
                 });
-                $("canvas").mouseup(function(event){
+                $(document).mouseup(function(event){
+                    if(mouseDown){
+                        var offSet = $("canvas").offset();
+                        var x = event.pageX - offSet.left,
+                            y = event.pageY - offSet.top;
+                        if((x > 0 && x < 500) && (y > 0 && y < 500)){
+                            newI = Math.floor(y/SquareWidth);
+                            newJ = Math.floor(x/SquareWidth);
+                            show.innerHTML = newI + " " + newJ;
+                            if((newI != oldI) || (newJ != oldJ))
+                                setSpin(newI, newJ);
+                        }
+                                                
+                    }
                     mouseDown = false;
                 });
                 $("canvas").mousemove(function(event){
@@ -768,7 +790,11 @@ and open the template in the editor.
             //if it's set to bipartite, or if pixel graphics is turned on
             function colorSquare(i, j) {
                 var r, g, b;
-                    if(showSpin && BfieldM[i][j] > .0001){
+                    if(!showSpin && BfieldM[i][j] == 100)// basically if the square is part of a nanotube it will be a darker blue
+                        context.fillStyle = "#000080";
+                    else if(!showSpin && BfieldM[i][j] == -100)
+                        context.fillStyle = "#FFD700"; //or a darker red
+                    else if(showSpin && BfieldM[i][j] > .0001){
                         if(pixelGraphics){
                             r=255; g = 0; b = 0;
                         }
@@ -782,6 +808,7 @@ and open the template in the editor.
                         else
                             context.fillStyle = '#008000';
                     }
+                    
                     else{
                         var upColor; //boolean of whether or not square will be colored in color assigned to "up" spin or positive 1
                         //basically if the magnet setting isn't bipartite the color will agree with the spin but if it is bipartite the color might not
@@ -880,25 +907,36 @@ and open the template in the editor.
                 makeAllOneColor();
                 var leftIndex = (Math.round(Size/2) - 1) - (Math.round(nDiameter/2) + (nThickness - 1));
                 var rightIndex = leftIndex + (nThickness - 1) + (nDiameter + 1);
+                var topIndex = (Math.round(Size/2) - 1) - (Math.round(nHeight/2)-1);
+                var bottomIndex = topIndex + nHeight;
                 
-                
-                for(var i = 0; i < nHeight; i++){
+                for(var i = topIndex; i < bottomIndex; i++){
                     for(var j = leftIndex; j < leftIndex + nThickness; j++){
+                        show.innerHMTL = i + " " + j;
                         s[i][j] *= -1;
-                        BfieldM[i][j] = 10 * nSpin;
+                        BfieldM[i][j] = 100 * nSpin;
                         colorSquare(i, j);
                         }
                 }
-                for(var i = 0; i < nHeight; i++){
+                for(var i = topIndex; i < bottomIndex; i++){
                     for(var j = rightIndex; j < rightIndex + nThickness; j++){
                         s[i][j] *= -1;
-                        BfieldM[i][j] = 10 * nSpin;
+                        BfieldM[i][j] = 100 * nSpin;
                         colorSquare(i, j);
                         }
                 }
                 ComputeE();
                 resetData();
                 DisplayData();
+           }
+           
+           function changeNanotubeSettings(){
+                nDiameterInput.value = Math.floor(Size/2); //makes sure the default nanotube isn't bigger than the lattice
+                nThicknessInput.value = Math.floor(Size/8) + 1;
+                nHeightInput.value = Math.floor(Size/2);
+                nDiameterInput.max = Size - 2; //makes sure you can't make a nanotube that's bigger than the lattice
+                nThicknessInput.max = Math.floor(Size/2);
+                nHeightInput.max = Size;
            }
            
            function changeSpf(){
@@ -960,8 +998,10 @@ and open the template in the editor.
 		SquareWidth = canvas.width / Size;
 		// Now re-create the spin array, down-sampling from temporary array
 		s = new Array(Size);
+                BfieldM = new Array(Size);
 		for (var iNew=0; iNew<Size; iNew++) {
 			s[iNew] = new Array(Size);
+                        BfieldM[iNew] = new Array(Size);
 			for (var jNew=0; jNew<Size; jNew++) {
 				var sTotal = 0;
                                 //iterates through one square in the new lattice
@@ -978,25 +1018,18 @@ and open the template in the editor.
 					if (Math.random() < 0.5) s[iNew][jNew] = 1; 
                                         else s[iNew][jNew] = -1;
 				}
+                                BfieldM[iNew][jNew] = 0;
 				colorSquare(iNew, jNew);
 			}
 		}
-                
-                nDiameterInput.value = Math.floor(Size/2); //makes sure the default nanotube isn't bigger than the lattice
-                nThicknessInput.value = Math.floor(Size/8) + 1;
-                nHeightInput.value = Math.floor(Size/2);
-                nDiameterInput.max = Size - 2; //makes sure you can't make a nanotube that's bigger than the lattice
-                nThicknessInput.max = Math.floor(Size/2);
-                nHeightInput.max = Size;
+            resetData();
+            ComputeE();
+            DisplayData();    
+            changeNanotubeSettings(); 
                 
 	}
         
-            function resizeAndReset(){
-                resize();
-                resetData();
-		ComputeE();
-                DisplayData();
-            }
+            
             
             
             
