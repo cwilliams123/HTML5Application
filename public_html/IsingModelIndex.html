@@ -349,7 +349,7 @@ and open the template in the editor.
            
             function saveTextAsFile()
             {   
-                var textToSave = makeSettingsString() + makeSpinArrayString(); //+ "X"+ makeBfieldArrayString();
+                var textToSave = makeSettingsString() + makeSpinArrayString() + "X"+ makeBfieldArrayString();
                 var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
                 var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
                 var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
@@ -389,8 +389,11 @@ and open the template in the editor.
             
             function recreateLattice(text){
                 var settingsText = text.substring(0, text.indexOf("["));
-                var arrayText = text.substring(text.indexOf("["));//
+                var arrayText = text.substring(text.indexOf("["), text.indexOf("X"));
+	var BfieldText = text.substring(text.indexOf("X") + 1);
                 BfieldM = JSON.parse("[" + BfieldText + "]");
+	s = JSON.parse("[" + arrayText + "]");
+	changeSettings(settingsText);
                 for(var i = 0; i < Size; i++){
                     for(var j = 0; j < Size; j++){
                         s[i][j] = Number(s[i][j]);
@@ -412,7 +415,7 @@ and open the template in the editor.
                 changeMagnet();
                 sizeSelect.selectedIndex = settings[3];
                 Size = Number(sizeSelect.options[sizeSelect.selectedIndex].text);
-                SquareWidth = canvas.length/Size;
+                SquareWidth = canvas.height/Size;
                 changeNanotubeSettings();
                 algorithmSelect.selectedIndex = settings[4];
                 changeAlgorithm();
@@ -736,6 +739,7 @@ and open the template in the editor.
                     }*/
                     mouseDown = false;
                 });
+                //make an unset square button
                 $("canvas").mousemove(function(event){
                     if(mouseDown){
                         var offSet = $(this).offset();
