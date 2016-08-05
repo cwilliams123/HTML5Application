@@ -75,9 +75,9 @@ and open the template in the editor.
                    </tbody>
                </table>
             </div>
-            Select Preset: <select id="presetSelect" onchange ="changePreset()">
+            <!--Select Preset: <select id="presetSelect" onchange ="changePreset()">
                 <option>Default</option>
-                <option>Test</option>
+                <option>Test</option>-->
             </select>
             <p> <b> Nanotube Settings: </b></p>
             <div>Thickness: <input type ="number" id ="nThicknessInput"> </div>
@@ -163,7 +163,7 @@ and open the template in the editor.
             
             var canvas = document.getElementById("theCanvas");
             var context = canvas.getContext("2d");
-            var presetSelect = document.getElementById("presetSelect");
+           // var presetSelect = document.getElementById("presetSelect");
             var nThicknessInput = document.getElementById("nThicknessInput");
             var nDiameterInput = document.getElementById("nDiameterInput");
             var nHeightInput = document.getElementById("nHeightInput");
@@ -291,8 +291,8 @@ and open the template in the editor.
             //sets local magnetic field of all dipoles to zero initially
             
             
-            var presets = [[2.27, 0.0, 0, 4, 0, 0], //default
-                          [3.00, -2.0, 1, 1, 1, 1]]; //test
+            //var presets = [[2.27, 0.0, 0, 4, 0, 0], //default
+                         // [3.00, -2.0, 1, 1, 1, 1]]; //test
                       
             
            
@@ -349,7 +349,7 @@ and open the template in the editor.
            
             function saveTextAsFile()
             {   
-                var textToSave = makeSettingsString() + makeSpinArrayString() + "X"+ makeBfieldArrayString();
+                var textToSave = makeSettingsString() + makeSpinArrayString(); //+ "X"+ makeBfieldArrayString();
                 var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
                 var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
                 var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
@@ -389,11 +389,7 @@ and open the template in the editor.
             
             function recreateLattice(text){
                 var settingsText = text.substring(0, text.indexOf("["));
-                var arrayText = text.substring(text.indexOf("["), text.indexOf("X"));
-                var BfieldText = text.substring(text.indexOf("X") + 1);
-                //show.innerHTML = arrayText;
-                changeSettings(settingsText);
-                s = JSON.parse("[" + arrayText + "]");
+                var arrayText = text.substring(text.indexOf("["));//
                 BfieldM = JSON.parse("[" + BfieldText + "]");
                 for(var i = 0; i < Size; i++){
                     for(var j = 0; j < Size; j++){
@@ -791,7 +787,7 @@ and open the template in the editor.
             function colorSquare(i, j) {
                 var r, g, b;
                     if(!showSpin && BfieldM[i][j] == 100)// basically if the square is part of a nanotube it will be a darker blue
-                        context.fillStyle = "#000080";
+                        context.fillStyle = "#191970";
                     else if(!showSpin && BfieldM[i][j] == -100)
                         context.fillStyle = "#FFD700"; //or a darker red
                     else if(showSpin && BfieldM[i][j] > .0001){
@@ -878,7 +874,7 @@ and open the template in the editor.
                 DisplayData();
             }
             
-            function changePreset(){
+           /* function changePreset(){
                var i = presetSelect.selectedIndex;
                tempInput.value = presets[i][0];
                changeT();
@@ -893,7 +889,7 @@ and open the template in the editor.
                boundarySelect.selectedIndex = presets[i][5];
                changeBoundaries();
 
-           }
+           }*/
            
             function makeNanotube(){
                 var nThickness = Number(nThicknessInput.value);
@@ -983,45 +979,45 @@ and open the template in the editor.
             
             //resizes lattice
             function resize() {
-		// First up-sample the lattice into a temporary array at max resolution:
-		var tempS = new Array(maxSize);
-		for (var i=0; i<maxSize; i++) {
-			tempS[i] = new Array(maxSize);
-			for (var j=0; j<maxSize; j++) {
-				var iOld = Math.floor(i / SquareWidth);
-				var jOld = Math.floor(j / SquareWidth);
-				tempS[i][j] = s[iOld][jOld];
-			}
-		}
-		// Get new size from GUI selector:
-		Size = Number(sizeSelect.options[sizeSelect.selectedIndex].text);
-		SquareWidth = canvas.width / Size;
-		// Now re-create the spin array, down-sampling from temporary array
-		s = new Array(Size);
+	// First up-sample the lattice into a temporary array at max resolution:
+	var tempS = new Array(maxSize);
+	for (var i=0; i<maxSize; i++) {
+	tempS[i] = new Array(maxSize);
+	for (var j=0; j<maxSize; j++) {
+	var iOld = Math.floor(i / SquareWidth);
+	var jOld = Math.floor(j / SquareWidth);
+	tempS[i][j] = s[iOld][jOld];
+	}
+	}
+	// Get new size from GUI selector:
+	Size = Number(sizeSelect.options[sizeSelect.selectedIndex].text);
+	SquareWidth = canvas.width / Size;
+	// Now re-create the spin array, down-sampling from temporary array
+	s = new Array(Size);
                 BfieldM = new Array(Size);
-		for (var iNew=0; iNew<Size; iNew++) {
-			s[iNew] = new Array(Size);
+	for (var iNew=0; iNew<Size; iNew++) {
+	s[iNew] = new Array(Size);
                         BfieldM[iNew] = new Array(Size);
-			for (var jNew=0; jNew<Size; jNew++) {
-				var sTotal = 0;
+	for (var jNew=0; jNew<Size; jNew++) {
+	var sTotal = 0;
                                 //iterates through one square in the new lattice
-				for (var i=iNew*SquareWidth; i<(iNew+1)*SquareWidth; i++) {
-					for (var j=jNew*SquareWidth; j<(jNew+1)*SquareWidth; j++) {
-						sTotal += tempS[i][j];
-					}
-				}
-				if (sTotal > 0) {
-					s[iNew][jNew] = 1;// average determines down-sampled value of that square
-				} else if (sTotal < 0) {
-					s[iNew][jNew] = -1;
-				} else { // resolve ties with a random number
-					if (Math.random() < 0.5) s[iNew][jNew] = 1; 
+	for (var i=iNew*SquareWidth; i<(iNew+1)*SquareWidth; i++) {
+	for (var j=jNew*SquareWidth; j<(jNew+1)*SquareWidth; j++) {
+	sTotal += tempS[i][j];
+	}
+	}
+	if (sTotal > 0) {
+	s[iNew][jNew] = 1;// average determines down-sampled value of that square
+	} else if (sTotal < 0) {
+	s[iNew][jNew] = -1;
+	} else { // resolve ties with a random number
+	if (Math.random() < 0.5) s[iNew][jNew] = 1; 
                                         else s[iNew][jNew] = -1;
-				}
+	}
                                 BfieldM[iNew][jNew] = 0;
-				colorSquare(iNew, jNew);
-			}
-		}
+	colorSquare(iNew, jNew);
+	}
+	}
             resetData();
             ComputeE();
             DisplayData();    
