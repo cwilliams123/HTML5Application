@@ -143,9 +143,9 @@ and open the template in the editor.
            &nbsp;&nbsp;
            <input type ="button" value ="Restart" onclick ="restart()" id = "restartButton" disabled>
            &nbsp;&nbsp;
-           <input type ="button" value ="Restart with Aligned Lattice" onclick ="restartfromAligned()"/>
+           <input type ="button" value ="Restart with Aligned Lattice" onclick ="restartFromAligned()"/>
            &nbsp;&nbsp;
-           <input type="button" value="Restart with Random Lattice" onclick="restartfromRandom()" />
+           <input type="button" value="Restart with Random Lattice" onclick="restartFromRandom()" />
         </div>
         
         
@@ -988,7 +988,7 @@ and open the template in the editor.
                 resetData();
            }
            
-           function restart(){ //to return to initial SAVED configuration (only enabled after the "open" button is pressed);
+           function restart(){ //to return to initial SAVED configuration (only enabled after the "open" button is pressed)
                 for(var i = 0; i< Size; i++){
                     for(var j = 0; j < Size; j++){
                        BfieldM[i][j] = initBfieldM[i][j];
@@ -1002,6 +1002,24 @@ and open the template in the editor.
                
                changeSettings(settings);
                colorAll();
+               startStop();
+           }
+           
+           function restartFromAligned(){
+               makeAllOneColor();
+               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
+               changeSettings(settings);
+               ComputeE();
+               resetData();
+               startStop();
+           }
+           
+           function restartFromRandom(){
+               randomize();
+               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
+               changeSettings(settings);
+               ComputeE();
+               resetData();
                startStop();
            }
            
