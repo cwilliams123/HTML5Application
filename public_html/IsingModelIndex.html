@@ -152,13 +152,14 @@ and open the template in the editor.
         <div class = "verticalSpace"> <input type="button" value=" Start " id="startButton" onclick ="startStop()"/> </div>
         
        
-        <div>
+        <div class = "verticalSpace">
             Filename to Save As: <input id="inputFileNameToSaveAs"/>
             <input type ="button" value ="Save" onclick="saveTextAsFile()"/>
         </div>
+        
         <div> 
-            Select a file to load: <input type ="file" id ="fileToLoad"/>
-            <input type="button" value ="Open" onclick="loadFileAsText()"/>
+            Select a file to load: <input type ="file" id ="fileToLoad" onclick = "enableOpen()"/>
+            <input type="button" value ="Open" onclick="loadFileAsText()" disabled id = "openButton"/>
         </div>
         
         <p id ="show"></p>
@@ -843,8 +844,7 @@ and open the template in the editor.
             function changeBoundaries(){
                 pbc = false; 
                 ApbcBothDirections = false; 
-                ApbcOneDirection = false; 
-                //PlusMinus = false; 
+                ApbcOneDirection = false;  
                 //only set them true if select says they are
                 if(boundarySelect.selectedIndex == 0){
                     pbc = true; 
@@ -860,7 +860,10 @@ and open the template in the editor.
                     ApbcOneDirection = true; 
                     colorAllAndResetBfieldM(); 
                 }
-                //isolated boundaries are index = 5 and are taken care of in the "else" clause in the getleft, right, etc functions
+                //isolated boundaries are index = 3 and are taken care of in the "else" clause in the getleft, right, etc functions
+                else if(boundarySelect.selectedIndex ==3){
+                    colorAllAndResetBfieldM();
+                }
                 //everything below just uses pbc but have skewed borders
                 else if(boundarySelect.selectedIndex == 4){
                     pbc = true; //other than top and bottom rows, all other boundaries are the same as pbc
@@ -1063,6 +1066,10 @@ and open the template in the editor.
             function destroyClickedElement(event)
             {
                     document.body.removeChild(event.target);
+            }
+            
+            function enableOpen(){
+                document.getElementById("openButton").disabled = false;
             }
 
             function loadFileAsText()
