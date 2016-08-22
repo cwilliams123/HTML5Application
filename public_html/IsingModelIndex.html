@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Weber State University) -- http://physics.weber.edu/schroeder/software/demos/IsingModel.html
 -->
 <html>
     <head>
@@ -249,8 +247,7 @@ and open the template in the editor.
 
             
             var SettleB = SettleBInput.value; //Dipole Settle Mode-what the square will flip to when it is clicked on
-            
-            //vars from schroeder's code
+           
             var maxSize = canvas.width; //used in resize()
             var running = false; //true when running
             
@@ -674,7 +671,6 @@ and open the template in the editor.
                 
                 for(var i = topIndex; i < bottomIndex; i++){
                     for(var j = leftIndex; j < leftIndex + nThickness; j++){
-                        show.innerHMTL = i + " " + j;
                         s[i][j] *= -1;
                         BfieldM[i][j] = 100 * nSpin;
                         colorSquare(i, j);
@@ -958,9 +954,34 @@ and open the template in the editor.
             
             
       
-            function randomize(){
-                for (var i = 0; i < Size; i++){
-                    for (var j = 0; j < Size; j++){
+            function randomize(){ //doesn't change fixed boundary conditions
+               var startX; //where the algorithm starts horizontally depends on the boundary condition (so we don't change the fixed spins in the skewed boundary conditions)
+               var endX; //where it ends horizontally
+               var startY;
+               var endY;
+               //if it's fixed plus minus one way
+               if(boundarySelect.selectedIndex == 4){
+                   startX = 0;
+                   endX = 0;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //fixed plus minus both ways, plus both ways, or minus both ways
+               else if(boundarySelect.selectedIndex > 4){
+                   startX = 1;
+                   endX = Size - 1;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //for all other boundary conditions, there's no need to avoid the top or bottom row because there aren't any fixed spins
+               else{
+                   startX = 0;
+                   endX = Size;
+                   startY = 0;
+                   endY = Size;
+               }
+               for (var i = startY; i < endY; i++){
+                    for (var j = startX; j < endX; j++){
                         if(Math.random() < 0.5){
                             s[i][j] = 1;
                         }
@@ -976,13 +997,38 @@ and open the template in the editor.
                 ComputeE();
                 resetData();
             }
-            //colors all squares opposite of first color, used in "align" button
+            //colors all squares opposite of a square in the middle of the lattice, used in "align" button (doesn't mess with fixed boundary conditions)
             function makeAllOneColor(){
-               s[0][0] *= -1;
-               
-               for(var i = 0; i < Size; i++){
-                   for(var j = 0; j<Size; j++){
-                       s[i][j] = s[0][0];
+               var startX; //where the algorithm starts horizontally depends on the boundary condition (so we don't change the fixed spins in the skewed boundary conditions)
+               var endX; //where it ends horizontally
+               var startY;
+               var endY;
+               //if it's fixed plus minus one way
+               if(boundarySelect.selectedIndex == 4){
+                   startX = 0;
+                   endX = 0;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //fixed plus minus both ways, plus both ways, or minus both ways
+               else if(boundarySelect.selectedIndex > 4){
+                   startX = 1;
+                   endX = Size - 1;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //for all other boundary conditions, there's no need to avoid the top or bottom row because there aren't any fixed spins
+               else{
+                   startX = 0;
+                   endX = Size;
+                   startY = 0;
+                   endY = Size;
+               }
+               var middle = Math.round(Size/2) - 1;
+               s[middle][middle] *= -1; //opposite of this middle square's color so you can flip back and forth by clicking it again
+               for(var i = startY; i < endY; i++){
+                   for(var j = startX; j < endX; j++){
+                       s[i][j] = s[middle][middle];
                        BfieldM[i][j] = 0;
                        colorSquare(i,j);
                    }
@@ -1008,19 +1054,19 @@ and open the template in the editor.
                startStop();
            }
            
-           function restartFromAligned(){
-               makeAllOneColor();
-               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
+           function restartFromAligned(){ //DOES revert boundary conditions to periodic and gets rid of fixed spins
+               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0]; //default settings
                changeSettings(settings);
+               makeAllOneColor();
                ComputeE();
                resetData();
                startStop();
            }
            
            function restartFromRandom(){
-               randomize();
                var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
                changeSettings(settings);
+               randomize();
                ComputeE();
                resetData();
                startStop();
@@ -1035,7 +1081,7 @@ and open the template in the editor.
                  
                 else
                     startButton.value = " Start ";
-               show.innerHTML = initS;
+               
                 
             }
             //everything below has to do with saving
@@ -1115,7 +1161,7 @@ and open the template in the editor.
                         initS[i][j] = s[i][j];
                     }
                 }
-                show.innerHTML = initBfieldM; 
+                
                 initSettings = new Array(settings.length);
                 for(var i = 0; i < settings.length; i++){
                     initSettings[i] = settings[i];
