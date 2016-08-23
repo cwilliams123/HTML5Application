@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Weber State University) -- http://physics.weber.edu/schroeder/software/demos/IsingModel.html
 -->
 <html>
     <head>
@@ -39,7 +37,7 @@ and open the template in the editor.
         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
         <div class = "sideBySide"> 
             <p><b> Data </b></p>
-            <div><input type ="button" value ="Reset Stats" onclick ="resetData()"></div>
+            <div><input type ="button" value ="Reset Stats" onclick ="resetData()"/></div>
             <div class = "verticalSpace"><table border="1" width="3" cellpadding="4">
                    <thead>
                    </thead>
@@ -77,23 +75,23 @@ and open the template in the editor.
             </div>
             
             <p> <b> Nanotube Settings: </b></p>
-            <div>Thickness: <input type ="number" id ="nThicknessInput" value = "2" min ="0" max ="150"> </div>
-            <div>Diameter: <input type ="number" id ="nDiameterInput" value = "15" min ="0" max ="298"> </div>
-            <div>Height: <input type ="number" id ="nHeightInput" value ="50" min ="0" max ="300"> </div>
+            <div>Thickness: <input type ="number" id ="nThicknessInput" value = "2" min ="0" max ="150"/> </div>
+            <div>Diameter: <input type ="number" id ="nDiameterInput" value = "15" min ="0" max ="298"/> </div>
+            <div>Height: <input type ="number" id ="nHeightInput" value ="50" min ="0" max ="300"/> </div>
             <div>Spin: <select id = "nSpinSelect">
                     <option>Positive</option>
                     <option>Negative</option>
                 </select> </div>
-            <div class = "verticalSpace"> <input type="button" value="Create Nanotube" onclick = "makeNanotube()"> </div>
-            <div> <p id = "molRatioReadout">Mole Ratio: .5 Up and .5 Down</p><input type ="range" min ="0" id ="molRatioSlider" onchange = "changeMolRatio()"> </div> 
-            <div class ="verticalSpace"><input type ="button" value ="Execute Mole Ratio" onclick ="execMolRatio()"> </div>
-            <div><p id = "spfReadout"> Steps Per Frame: 10000</p> <input type ="range" min ="1" max ="7" value = "4" id = "spfSlider" onchange = "changeSpf()"> </div>
+            <div class = "verticalSpace"> <input type="button" value="Create Nanotube" onclick = "makeNanotube()"/> </div>
+            <div> <p id = "molRatioReadout">Mole Ratio: .5 Up and .5 Down</p><input type ="range" min ="0" id ="molRatioSlider" onchange = "changeMolRatio()"/> </div> 
+            <div class ="verticalSpace"><input type ="button" value ="Execute Mole Ratio" onclick ="execMolRatio()"/> </div>
+            <div><p id = "spfReadout"> Steps Per Frame: 10000</p> <input type ="range" min ="1" max ="7" value = "4" id = "spfSlider" onchange = "changeSpf()"/> </div>
        </div>
         
         <div class = "verticalSpace">
-            Temperature: <input type="number" id ="tempInput" step = "0.01" value ="2.27" onchange = "changeT()" min = "0.0">
+            Temperature: <input type="number" id ="tempInput" step = "0.01" value ="2.27" onchange = "changeT()" min = "0.0"/>
             &nbsp; &nbsp;
-            Magnetic Field: <input type="number" id ="BfieldInput" step = "0.01" value ="0.0" onchange = "changeBfield()">
+            Magnetic Field: <input type="number" id ="BfieldInput" step = "0.01" value ="0.0" onchange = "changeBfield()"/>
             &nbsp; &nbsp;
             <select id ="magnetSelect" onchange = "changeMagnet()">
                 <option>Ferromagnetic</option>
@@ -133,26 +131,33 @@ and open the template in the editor.
             </select>
         </div>
         <div class = "verticalSpace"> 
-            Show Fixed Spin: <input type = "checkbox" id = "showSpin" onclick = "changeShowSpin()">
+            Show Fixed Spin: <input type = "checkbox" id = "showSpin" onclick = "changeShowSpin()"/>
             &nbsp;&nbsp; 
-            Local Magnetic Field: <input type = "number" id ="SettleB" value ="0.0" min ="-10.0" max ="10.0" onchange = "changeSettleB()">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-           <input type ="button" value ="Randomize" id ="randomizeButton" onclick ="randomize()">
+            Local Magnetic Field: <input type = "number" id ="SettleB" value ="0.0" min ="-10.0" max ="10.0" onchange = "changeSettleB()"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <input type ="button" value ="Randomize" id ="randomizeButton" onclick ="randomize()"/>
             &nbsp;&nbsp;
-           <input type ="button" value ="Align" onclick ="makeAllOneColor()">
+           <input type ="button" value ="Align" onclick ="makeAllOneColor()"/>
+           &nbsp;&nbsp;
+           <input type ="button" value ="Restart" onclick ="restart()" id = "restartButton" disabled>
+           &nbsp;&nbsp;
+           <input type ="button" value ="Restart with Aligned Lattice" onclick ="restartFromAligned()"/>
+           &nbsp;&nbsp;
+           <input type="button" value="Restart with Random Lattice" onclick="restartFromRandom()" />
         </div>
         
         
         <div class = "verticalSpace"> <input type="button" value=" Start " id="startButton" onclick ="startStop()"/> </div>
         
        
-        <div>
-            Filename to Save As: <input id="inputFileNameToSaveAs">
-            <button onclick="saveTextAsFile()">Save</button>
+        <div class = "verticalSpace">
+            Filename to Save As: <input id="inputFileNameToSaveAs"/>
+            <input type ="button" value ="Save" onclick="saveTextAsFile()"/>
         </div>
+        
         <div> 
-            Select a file to load: <input type ="file" id ="fileToLoad">
-            <button onclick="loadFileAsText()">Open</button>
+            Select a file to load: <input type ="file" id ="fileToLoad" onclick = "enableOpen()"/>
+            <input type="button" value ="Open" onclick="loadFileAsText()" disabled id = "openButton"/>
         </div>
         
         <p id ="show"></p>
@@ -160,20 +165,19 @@ and open the template in the editor.
         
         
         <script> 
-             //variables from html
+             //variables from html, organized by how they appear top to bottom, left to right on the webpage
              
             
             var canvas = document.getElementById("theCanvas");
             var context = canvas.getContext("2d");
-            var nThicknessInput = document.getElementById("nThicknessInput");//n = nanotube
+            var nThicknessInput = document.getElementById("nThicknessInput");// n = nanotube
             var nDiameterInput = document.getElementById("nDiameterInput");
             var nHeightInput = document.getElementById("nHeightInput");
             var nSpinSelect = document.getElementById("nSpinSelect");
-            var molRatioSlider = document.getElementById("molRatioSlider");
+            var molRatioSlider = document.getElementById("molRatioSlider"); //mol = mole
             var molRatioReadout = document.getElementById("molRatioReadout");
             var spfReadout = document.getElementById("spfReadout");
             var spfSlider = document.getElementById("spfSlider");
-            var startButton = document.getElementById("startButton");
             var tempInput = document.getElementById("tempInput"); 
             var BfieldInput = document.getElementById("BfieldInput"); 
             var magnetSelect = document.getElementById("magnetSelect");
@@ -182,9 +186,22 @@ and open the template in the editor.
             var boundarySelect = document.getElementById("boundarySelect");
             var showSpinCheck = document.getElementById("showSpin");
             var SettleBInput = document.getElementById("SettleB");
+            var startButton = document.getElementById("startButton");
             var show = document.getElementById("show"); //for testing purposes
 
+            //data
+            var InnerLoopCount = 0; 
+            var StepsPerLoop = Math.pow(10, Number(spfSlider.value)); // this*innerLoopCount rounded to the nearest hundredth = steps that are shown 
+    
+            var Ecurrent = 0.0; //energy of current loops in algorithm
+            var EsquaredTotal = 0.0; // declared to calculate sigmaE
+            var Etotal = 0.0; //total energy, declared to calculate average energy
             
+            var Mcurrent = 0.0; //magnetization of loop
+            var MsquaredTotal = 0.0; //see EsquaredTotal
+            var Mtotal = 0.0; //total magnetization, used in average
+            
+            //inputs
             
             var T = Number(tempInput.value); //temperature
             var zeroT = false; //true when t = 0
@@ -226,29 +243,13 @@ and open the template in the editor.
             var plusBothDirections = false;
             var minusBothDirections = false;
             
-           
-            //data
-            var InnerLoopCount = 0; 
-            var StepsPerLoop = Math.pow(10, Number(spfSlider.value)); // this*innerLoopCount rounded to the nearest hundredth = steps that are shown 
-    
-            var Ecurrent = 0.0; //energy of current loops in algorithm
-            var EsquaredTotal = 0.0; // declared to calculate sigmaE
-            var Etotal = 0.0; //total energy, declared to calculate average energy
-            
-            var Mcurrent = 0.0; //magnetization of loop
-            var MsquaredTotal = 0.0; //see EsquaredTotal
-            var Mtotal = 0.0; //total magnetization, used in average
-            
             var showSpin = showSpinCheck.checked; // if true will show in a different color the squares that are manually changed
 
             
             var SettleB = SettleBInput.value; //Dipole Settle Mode-what the square will flip to when it is clicked on
-            
-            //vars from schroeder's code
+           
             var maxSize = canvas.width; //used in resize()
             var running = false; //true when running
-
-            
             
             //sets local magnetic field of all dipoles to zero initially
             var BfieldM = new Array(Size);
@@ -274,14 +275,14 @@ and open the template in the editor.
                     }
                     
                 }
-
-
-                             
+           //these will be defined when someone saves a configuration so that the user can easily go back to the initial saved configuration     
+            var initS;
+            var initBfieldM;
+            var initSettings;
             
             //computes current energy of original lattice before simulation begins (resetData() then resets the averages, not current energy)
             ComputeE();
             resetData();
-            DisplayData();
             
             simulate();
             
@@ -416,8 +417,7 @@ and open the template in the editor.
                         
                     }
                 
-                else 
-                    var x = j - 1;
+                else
                     return s[i][j-1];
                 
             }
@@ -651,6 +651,10 @@ and open the template in the editor.
            
            //makes a nanotube of set spins shown in dark yellow or blue
            function makeNanotube(){
+                BfieldInput.value = 0;
+                changeBfield();
+                tempInput.value = 1;
+                changeT();
                 var nThickness = Number(nThicknessInput.value);
                 var nDiameter = Number(nDiameterInput.value);
                 var nHeight = Number(nHeightInput.value);
@@ -667,7 +671,6 @@ and open the template in the editor.
                 
                 for(var i = topIndex; i < bottomIndex; i++){
                     for(var j = leftIndex; j < leftIndex + nThickness; j++){
-                        show.innerHMTL = i + " " + j;
                         s[i][j] *= -1;
                         BfieldM[i][j] = 100 * nSpin;
                         colorSquare(i, j);
@@ -680,9 +683,9 @@ and open the template in the editor.
                         colorSquare(i, j);
                         }
                 }
+                
                 ComputeE();
                 resetData();
-                DisplayData();
            }
            
            function changeNanotubeSettings(){
@@ -708,18 +711,7 @@ and open the template in the editor.
                    molRatioSlider.value = 1;
                    molRatioSlider.max = 3;
                }
-               var v = Number(molRatioSlider.value);
-               
-               if(Size%4 == 0)
-                   upRatio = v/4;
-               
-               else if(Size%5 == 0)
-                   upRatio = v/5;
-               
-               else if(Size%3 == 0)
-                   upRatio = v/3;
-               var downRatio = (1 - upRatio).toFixed(2);
-               molRatioReadout.innerHTML = "Mole Ratio: " + upRatio+ " Up and " + downRatio + " Down";                
+              changeMolRatio();              
            }
            
            function changeMolRatio(){//ONLY changes readout 
@@ -739,23 +731,23 @@ and open the template in the editor.
            
            function execMolRatio(){//actually creates the mole ratio
                var middleIndex = upRatio*Size; //where the "up" part will end and the "down" part will start in the lattice
+               var topSpin = -s[0][0]; //decides the spin of the top part of the lattice by taking the opposite of the current spin (so when you press "executemolratio" again, it  flip the color of the top and bottom part)
                for(i = 0; i < middleIndex; i++){
                    for(j = 0; j< Size; j++){
-                       s[i][j] = 1;
+                       s[i][j] = topSpin;
                        BfieldM[i][j]= 0;
                        colorSquare(i,j);
                    }
                }
                for(i = middleIndex; i <Size; i++){
                    for(j= 0; j<Size; j++){
-                       s[i][j] = -1;
+                       s[i][j] = -topSpin;
                        BfieldM[i][j] = 0;
                        colorSquare(i,j);
                    }
                }
                ComputeE();
                resetData();
-               DisplayData();
            }
            
            function changeSpf(){
@@ -831,8 +823,7 @@ and open the template in the editor.
                     }
                 }
                     resetData();
-                    ComputeE();
-                    DisplayData();    
+                    ComputeE();    
                     changeNanotubeSettings(); 
                     changeMolRatioSettings();
                 
@@ -849,8 +840,7 @@ and open the template in the editor.
             function changeBoundaries(){
                 pbc = false; 
                 ApbcBothDirections = false; 
-                ApbcOneDirection = false; 
-                //PlusMinus = false; 
+                ApbcOneDirection = false;  
                 //only set them true if select says they are
                 if(boundarySelect.selectedIndex == 0){
                     pbc = true; 
@@ -866,7 +856,10 @@ and open the template in the editor.
                     ApbcOneDirection = true; 
                     colorAllAndResetBfieldM(); 
                 }
-                //isolated boundaries are index = 5 and are taken care of in the "else" clause in the getleft, right, etc functions
+                //isolated boundaries are index = 3 and are taken care of in the "else" clause in the getleft, right, etc functions
+                else if(boundarySelect.selectedIndex ==3){
+                    colorAllAndResetBfieldM();
+                }
                 //everything below just uses pbc but have skewed borders
                 else if(boundarySelect.selectedIndex == 4){
                     pbc = true; //other than top and bottom rows, all other boundaries are the same as pbc
@@ -948,7 +941,6 @@ and open the template in the editor.
                 }
                 ComputeE();
                 resetData();
-                DisplayData();
             }
             
             function changeShowSpin(){
@@ -962,9 +954,34 @@ and open the template in the editor.
             
             
       
-            function randomize(){
-                for (var i = 0; i < Size; i++){
-                    for (var j = 0; j < Size; j++){
+            function randomize(){ //doesn't change fixed boundary conditions
+               var startX; //where the algorithm starts horizontally depends on the boundary condition (so we don't change the fixed spins in the skewed boundary conditions)
+               var endX; //where it ends horizontally
+               var startY;
+               var endY;
+               //if it's fixed plus minus one way
+               if(boundarySelect.selectedIndex == 4){
+                   startX = 0;
+                   endX = 0;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //fixed plus minus both ways, plus both ways, or minus both ways
+               else if(boundarySelect.selectedIndex > 4){
+                   startX = 1;
+                   endX = Size - 1;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //for all other boundary conditions, there's no need to avoid the top or bottom row because there aren't any fixed spins
+               else{
+                   startX = 0;
+                   endX = Size;
+                   startY = 0;
+                   endY = Size;
+               }
+               for (var i = startY; i < endY; i++){
+                    for (var j = startX; j < endX; j++){
                         if(Math.random() < 0.5){
                             s[i][j] = 1;
                         }
@@ -979,24 +996,81 @@ and open the template in the editor.
 
                 ComputeE();
                 resetData();
-                DisplayData();
             }
-            //colors all squares opposite of first color, used in "align" button
+            //colors all squares opposite of a square in the middle of the lattice, used in "align" button (doesn't mess with fixed boundary conditions)
             function makeAllOneColor(){
-               s[0][0] *= -1;
-               
-               for(var i = 0; i < Size; i++){
-                   for(var j = 0; j<Size; j++){
-                       s[i][j] = s[0][0];
+               var startX; //where the algorithm starts horizontally depends on the boundary condition (so we don't change the fixed spins in the skewed boundary conditions)
+               var endX; //where it ends horizontally
+               var startY;
+               var endY;
+               //if it's fixed plus minus one way
+               if(boundarySelect.selectedIndex == 4){
+                   startX = 0;
+                   endX = 0;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //fixed plus minus both ways, plus both ways, or minus both ways
+               else if(boundarySelect.selectedIndex > 4){
+                   startX = 1;
+                   endX = Size - 1;
+                   startY = 1;
+                   endY = Size - 1;
+               }
+               //for all other boundary conditions, there's no need to avoid the top or bottom row because there aren't any fixed spins
+               else{
+                   startX = 0;
+                   endX = Size;
+                   startY = 0;
+                   endY = Size;
+               }
+               var middle = Math.round(Size/2) - 1;
+               s[middle][middle] *= -1; //opposite of this middle square's color so you can flip back and forth by clicking it again
+               for(var i = startY; i < endY; i++){
+                   for(var j = startX; j < endX; j++){
+                       s[i][j] = s[middle][middle];
                        BfieldM[i][j] = 0;
                        colorSquare(i,j);
                    }
                }
                 ComputeE();
                 resetData();
-                DisplayData();
            }
            
+           function restart(){ //to return to initial SAVED configuration (only enabled after the "open" button is pressed)
+                for(var i = 0; i< Size; i++){
+                    for(var j = 0; j < Size; j++){
+                       BfieldM[i][j] = initBfieldM[i][j];
+                       s[i][j] = initS;
+                    }
+                }
+                var settings = [];
+                for(var i = 0; i < initSettings.length; i++){
+                    settings[i] = initSettings[i];
+                }
+               
+               changeSettings(settings);
+               colorAll();
+               startStop();
+           }
+           
+           function restartFromAligned(){ //DOES revert boundary conditions to periodic and gets rid of fixed spins
+               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0]; //default settings
+               changeSettings(settings);
+               makeAllOneColor();
+               ComputeE();
+               resetData();
+               startStop();
+           }
+           
+           function restartFromRandom(){
+               var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
+               changeSettings(settings);
+               randomize();
+               ComputeE();
+               resetData();
+               startStop();
+           }
            
            
            //used in start button
@@ -1007,6 +1081,7 @@ and open the template in the editor.
                  
                 else
                     startButton.value = " Start ";
+               
                 
             }
             //everything below has to do with saving
@@ -1016,7 +1091,7 @@ and open the template in the editor.
            
             function saveTextAsFile()
             {   
-                var textToSave = makeSettingsString() + makeSpinArrayString() + "X"+ makeBfieldArrayString();
+                var textToSave = makeSettingsString() + makeSpinArrayString() + "X"+ makeBfieldArrayString(); //"X" used as a divider between spin and Bfield array so it doesn't have to know how long each is
                 var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
                 var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
                 var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
@@ -1038,9 +1113,14 @@ and open the template in the editor.
             {
                     document.body.removeChild(event.target);
             }
+            
+            function enableOpen(){
+                document.getElementById("openButton").disabled = false;
+            }
 
             function loadFileAsText()
             {
+                document.getElementById("restartButton").disabled = false;
                 var fileToLoad = document.getElementById("fileToLoad").files[0];
 
                 var fileReader = new FileReader();
@@ -1056,11 +1136,12 @@ and open the template in the editor.
             
             function recreateLattice(text){
                 var settingsText = text.substring(0, text.indexOf("["));
-                var arrayText = text.substring(text.indexOf("["), text.indexOf("X"));
+                var sText = text.substring(text.indexOf("["), text.indexOf("X"));
                 var BfieldText = text.substring(text.indexOf("X") + 1);
+                var settings = JSON.parse("[" + settingsText + "]");
+                changeSettings(settings);
+                s = JSON.parse("[" + sText + "]");
                 BfieldM = JSON.parse("[" + BfieldText + "]");
-                s = JSON.parse("[" + arrayText + "]");
-                changeSettings(settingsText);
                 for(var i = 0; i < Size; i++){
                     for(var j = 0; j < Size; j++){
                         s[i][j] = Number(s[i][j]);
@@ -1069,7 +1150,22 @@ and open the template in the editor.
                         colorSquare(i,j);
                     }
                 }
+                //saved for "restart" button to return to initial saved configuration
+                initBfieldM = new Array(Size);
+                initS = new Array(Size);
+                for(var i = 0; i < Size; i++){
+                    initBfieldM[i] = new Array(Size);
+                    initS[i] = new Array(Size);
+                    for(var j = 0; j < Size; j++){
+                        initBfieldM[i][j] = BfieldM[i][j];
+                        initS[i][j] = s[i][j];
+                    }
+                }
                 
+                initSettings = new Array(settings.length);
+                for(var i = 0; i < settings.length; i++){
+                    initSettings[i] = settings[i];
+                }
             }
             
             function makeSettingsString() {
@@ -1081,7 +1177,7 @@ and open the template in the editor.
              function makeSpinArrayString() {
                  var string = "";
                  for(var i = 0; i<Size; i++){ 
-                     string += "[";
+                     string += "["; 
                      for(var j = 0; j<Size; j++){
                          if(j<Size-1)
                             string += "\"" + s[i][j] + "\", ";
@@ -1114,8 +1210,8 @@ and open the template in the editor.
                  return string;
              }
             
-            function changeSettings(text){
-                var settings = JSON.parse("[" + text +"]");
+            function changeSettings(settings){
+                
                 tempInput.value = settings[0];
                 changeT();
                 BfieldInput.value = settings[1];
