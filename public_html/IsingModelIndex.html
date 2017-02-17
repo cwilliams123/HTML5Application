@@ -131,7 +131,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
             </select>
         </div>
         <div class = "verticalSpace"> 
-            Show Magnetized Spin: <input type = "checkbox" id = "showSpin" onclick = "changeShowSpin()"/>
+            Show Fixed Spin: <input type = "checkbox" id = "showSpin" onclick = "changeShowSpin()"/>
             &nbsp;&nbsp; 
             Local Magnetic Field: <input type = "number" id ="SettleB" value ="0.0" min ="-10.0" max ="10.0" onchange = "changeSettleB()"/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -690,7 +690,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
            
            function changeNanotubeSettings(){
                 nDiameterInput.value = Math.floor(Size/2); //makes sure the default nanotube isn't bigger than the lattice
-                nThicknessInput.value = 2;
+                nThicknessInput.value = Math.floor(Size/8) + 1;
                 nHeightInput.value = Math.floor(Size/2);
                 nDiameterInput.max = Size - 2; //makes sure you can't make a nanotube that's bigger than the lattice
                 nThicknessInput.max = Math.floor(Size/2);
