@@ -354,7 +354,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                                 colorSquare(i2, j2);
                                 Ecurrent += EdiffforM;
                                 Mcurrent += ((2*thisS) + (2*thatS));
-                                var i = thisS*(getTop(i1, j1)+getBottom(i1, j1)+getRight(i1,j1)+getLeft(i1,j1)) + thatS*(getTop(i2, j2)+getBottom(i2, j2)+getRight(i2,j2)+getLeft(i2,j2))+thisS*(Bfield+BfieldM[i1][j1])+thatS*(Bfield+BfieldM[i2][j2]);
+                                var i = thisS*(top1+bottom1+left1+right1) + thatS*(top2+bottom2+left2+right2)+thisS*(Bfield+BfieldM[i1][j1])+thatS*(Bfield+BfieldM[i2][j2]);
                                 show.innerHTML = i;
             }
                             }
