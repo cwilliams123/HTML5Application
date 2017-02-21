@@ -236,7 +236,8 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
             boundarySelect.selectedIndex = 0; //default is regular pbc
             var pbc = true; 
             var ApbcBothDirections = false; 
-            var ApbcOneDirection = false; 
+            var ApbcOneDirection = false;
+            var FreeBound = false; //for isolated boundaries
             //for all boundary condiitons below, they are really just pbc with fixed positive or negative edges
             var PlusMinus = false; 
             var skewedPlusMinus = false;
@@ -281,7 +282,10 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
             var initSettings;
             
             //computes current energy of original lattice before simulation begins (resetData() then resets the averages, not current energy)
-            ComputeE();
+            if (metropolis)
+                ComputeEforMetropolis();
+            else
+                ComputeEforKawasaki();
             resetData();
             
             simulate();
@@ -308,14 +312,14 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                     var i = Math.floor(Math.random()*Size);
                     var j = Math.floor(Math.random()*Size);
                     thisS = s[i][j];
-                    //var Ediff = deltaU(i,j);
+                    var Ediff = deltaU(i,j);
                     var EdiffforM = deltaUforM(i,j);
                     if(zeroT){ //to avoid dividing by zero
                         if((EdiffforM < 0.0) || ((EdiffforM == 0) && (Math.random() < .5))){ //always flip if deltaU is negative or if deltaU is 0 then flip randomly
                             thisS *= -1;
                             s[i][j] = thisS;
                             colorSquare(i,j);
-                            Ecurrent += EdiffforM;
+                            Ecurrent += Ediff;
                             Mcurrent += (2*thisS); 
                         }
                         //if deltaU is positive then there is no flip when at absolute zero
@@ -324,7 +328,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         thisS *= -1;
                         s[i][j] = thisS;
                         colorSquare(i,j);
-                        Ecurrent += EdiffforM;
+                        Ecurrent += Ediff;
                         Mcurrent += (2*thisS);
                         
                     }
@@ -344,6 +348,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         var thisS = s[i1][j1];
                         var thatS = s[i2][j2];
                         var EdiffforM = deltaUforKawasakiforM(i1, j1, i2, j2);
+                        var Ediff = deltaUforKawasaki(i1, j1, i2, j2);
                         if(zeroT){ //to avoid dividing by zero
                             if((EdiffforM < 0.0) || ((EdiffforM == 0) && (Math.random() < .5))){ //always flip if deltaU is negative
                                 thisS *= -1;
@@ -352,7 +357,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                                 s[i2][j2] = thatS;
                                 colorSquare(i1, j1);
                                 colorSquare(i2, j2);
-                                Ecurrent += EdiffforM;
+                                Ecurrent += Ediff;
                                 Mcurrent += ((2*thisS) + (2*thatS));
                             }
                            
@@ -364,12 +369,21 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                             s[i2][j2] = thatS;
                             colorSquare(i1, j1);
                             colorSquare(i2, j2);
-                            Ecurrent += EdiffforM;
+                            Ecurrent += Ediff;
                             Mcurrent += ((2*thisS) + (2*thatS));
                         }
                     }
                 }
                 InnerLoopCount++;
+            }
+            // energy change without local magnetic field
+            function deltaU(i,j){
+                var left = getLeft(i,j);
+                var right = getRight(i,j);
+                var top = getTop(i,j);
+                var bottom = getBottom(i,j); 
+                var thisS = s[i][j];
+                return (2.0 * CouplingConstant * thisS * (top+bottom+left+right)+2.0 * thisS * Bfield)
             }
             
             //computes energy change if dipole s[i][j] is flipped with local magnetic field
@@ -382,6 +396,48 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 
                 return (2.0 * CouplingConstant * thisS * (top+bottom+left+right))+ (2.0 * thisS *(Bfield+BfieldM[i][j]));
             }
+            
+            // energy change for kawaskai without local magnetic field
+            function deltaUforKawasaki(i1,j1, i2, j2){
+                var thisS = s[i1][j1];
+                var thatS = s[i2][j2];
+                
+                var left1 = getLeft(i1,j1);
+                var right1 = getRight(i1,j1);
+                var top1 = getTop(i1,j1);
+                var bottom1 = getBottom(i1,j1);
+                
+                var left2 = getLeft(i2,j2);
+                var right2 = getRight(i2,j2);
+                var top2 = getTop(i2,j2);
+                var bottom2 = getBottom(i2,j2);
+                
+                if ((j2 == 0 && j1 == Size - 1 && i2 == i1) || (j2 == Size - 1 && j1 == 0 && i2 == i1) || (i2 == 0 && i1 == Size - 1 && j2 == j1)
+                || (i2 == Size - 1 && i1 == 0 && j2 == j1)) {
+                    if (pbc || ApbcBothDirections || ApbcOneDirection || PlusMinus)
+                      return (2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 
+                          2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 
+                          4.0*CouplingConstant + 2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][j2]));
+                    else if (FreeBound)
+                      return (2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 
+                          2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 
+                          2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][2]));
+                  }
+                else if ((j2 == j1+1 && i2 == i1) || (j1 == j2 + 1 && i1 == i2) || (j2 == j1-1 && i2 == i1) || 
+                (j1 == j2 - 1 && i1 == i2) || (j2 == j1 && i2 == i1+1) || (j1 == j2 && i1 == i2 + 1) || 
+                (j2 == j1 && i2 == i1-1 || j1 == j2 && i1 == i2 - 1))
+                    return (2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 
+                        2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 
+                        4.0*CouplingConstant + 2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][j2]));
+                else
+                    return (2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 
+                        2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 
+                        2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][j2]));
+              
+
+                
+            }
+            
             //energy change with local magnetic field
             function deltaUforKawasakiforM(i1, j1, i2, j2){
                 var thisS = s[i1][j1];
@@ -397,7 +453,17 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 var top2 = getTop(i2,j2);
                 var bottom2 = getBottom(i2,j2);
                 
-                return 2.0*CouplingConstant*thisS*(top1+bottom1+left1+right1) + 2.0*CouplingConstant*thatS*(top2+bottom2+left2+right2)+2.0*thisS*(Bfield+BfieldM[i1][j1])+2.0*thatS*(Bfield+BfieldM[i2][j2]);
+                
+                if (((j2 == j1+1) && i2 == i1) || ((j1 == j2 + 1) && i1 == i2) || ((j2 == j1-1) && (i2 == i1)) 
+                || (j1 == j2 - 1 && i1 == i2) || (j2 == j1 && i2 == i1+1) || (j1 == j2 && i1 == i2 + 1) ||
+                (j2 == j1 && i2 == i1-1) || (j1 == j2 && i1 == i2 - 1)){
+                    return 2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 4.0*CouplingConstant + 2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][j2]);
+                  
+              }
+                else
+                  return 2.0*CouplingConstant*thisS*(bottom1 + top1 + left1 + right1) + 2.0*CouplingConstant*thatS*(bottom2 + top2 + left2 + right2) + 2.0*thisS*(Bfield+BfieldM[i1][j1]) + 2.0*thatS*(Bfield+BfieldM[i2][j2]);
+
+                
             }
             
             //returns the dipole to the left of s[i][j] taking into account boundary conditions
@@ -412,7 +478,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                     else if (ApbcOneDirection)
                         return -s[i][Size -1];
 
-                    else
+                    else if(FreeBound)
                         return 0;
                         
                     }
@@ -431,7 +497,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         return -s[i][0];
                     else if (ApbcOneDirection)
                         return -s[i][0];
-                    else
+                    else if (FreeBound)
                         return 0;
                 }    
                    else
@@ -447,7 +513,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         return -s[Size-1][j];
                     else if (ApbcOneDirection)
                         return s[Size-1][j];
-                    else
+                    else if (FreeBound)
                         return 0;
                  }
                  else
@@ -462,7 +528,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                          return -s[0][j];
                      else if (ApbcOneDirection)
                          return s[0][j];
-                     else
+                     else if (FreeBound)
                          return 0;
                  }
                  else
@@ -507,8 +573,8 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 
             }
         }
-            //computes total energy from scratch
-            function ComputeE(){
+            //computes total energy from scratch when using the metropolis algorithm
+            function ComputeEforMetropolis(){
                 Ecurrent = 0.0;
                 Mcurrent = 0.0;
                 for(var i=0; i<Size; i++){
@@ -518,6 +584,22 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         var thisS = s[i][j];
                         Ecurrent = Ecurrent - CouplingConstant*thisS*(right+bottom)-thisS*Bfield;
                         Mcurrent+= thisS;
+                    }
+                }
+            }
+            //computes total energy from scratch when using the kawasaki algorithm
+            function ComputeEforKawasaki(){
+                Ecurrent = 0.0;
+                Mcurrent = 0.0;
+                for(var i=0; i<Size; i++){
+                    for(var j=0; j<Size; j++){
+                        var right = getRight(i,j);
+                        var left = getLeft(i,j);
+                        var top = getTop(i,j);
+                        var bottom = getBottom(i,j);
+                        var thisS = s[i][j];
+                        Ecurrent = Ecurrent - .5*CouplingConstant*thisS*(right+left+top+bottom)-thisS*Bfield
+                        Mcurrent += thisS;
                     }
                 }
             }
@@ -684,7 +766,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         }
                 }
                 
-                ComputeE();
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+                
                 resetData();
            }
            
@@ -746,7 +832,10 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                        colorSquare(i,j);
                    }
                }
-               ComputeE();
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                resetData();
            }
            
@@ -822,10 +911,15 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         colorSquare(iNew, jNew);
                     }
                 }
-                    resetData();
-                    ComputeE();    
-                    changeNanotubeSettings(); 
-                    changeMolRatioSettings();
+                resetData();
+                    
+                if (metropolis)
+                     ComputeEforMetropolis();
+                else
+                ComputeEforKawasaki(); 
+            
+               changeNanotubeSettings(); 
+               changeMolRatioSettings();
                 
 	}
         
@@ -856,8 +950,9 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                     ApbcOneDirection = true; 
                     colorAllAndResetBfieldM(); 
                 }
-                //isolated boundaries are index = 3 and are taken care of in the "else" clause in the getleft, right, etc functions
+                
                 else if(boundarySelect.selectedIndex ==3){
+                    FreeBound = true;
                     colorAllAndResetBfieldM();
                 }
                 //everything below just uses pbc but have skewed borders
@@ -939,7 +1034,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         colorSquare(i, Size-1);
                     }
                 }
-                ComputeE();
+                
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                 resetData();
             }
             
@@ -994,7 +1093,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                         
                     }
 
-                ComputeE();
+                
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                 resetData();
             }
             //colors all squares opposite of a square in the middle of the lattice, used in "align" button (doesn't mess with fixed boundary conditions)
@@ -1033,7 +1136,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                        colorSquare(i,j);
                    }
                }
-                ComputeE();
+                
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                 resetData();
            }
            
@@ -1058,7 +1165,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0]; //default settings
                changeSettings(settings);
                makeAllOneColor();
-               ComputeE();
+               
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                resetData();
                startStop();
            }
@@ -1067,7 +1178,11 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                var settings = [2.27, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0];
                changeSettings(settings);
                randomize();
-               ComputeE();
+              
+               if (metropolis)
+                    ComputeEforMetropolis();
+               else
+                    ComputeEforKawasaki();
                resetData();
                startStop();
            }
