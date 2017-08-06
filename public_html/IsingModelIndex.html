@@ -109,7 +109,13 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 <option>Draw Thin X</option>
                 <option>Draw Horizontal</option>
                 <option>Draw Vertical</option>
+                 <option>Draw Diagonal</option>
                  <option>Draw SquareDrop </option>
+                 <option>Draw Circular Droplet</option>
+                  <option>Draw Beads</option>
+                  <option>Draw Donut</option>
+                 
+                 
             </select>
             &nbsp; &nbsp;
             Size: <select id="sizeSelect" onchange = "resize()">
@@ -766,7 +772,19 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
 					}	
 				if (patternSelect.value == "Draw SquareDrop"){
 					return MakeSquare();
-					}			
+					}	
+				if (patternSelect.value == "Draw Beads"){
+					return MakeBeads();
+					}
+				if (patternSelect.value == "Draw Diagonal"){
+					return MakeDiagonal();
+					}		
+				if (patternSelect.value == "Draw Circular Droplet"){
+					return MakeCircle();
+					}		
+				if (patternSelect.value == "Draw Donut"){
+					return MakeDonut();
+					}							
 					}
 		
 				
@@ -828,7 +846,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                
 
 
-}
+		}
            
             function MakeCross(){
             
@@ -887,6 +905,84 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 }
               
            }
+           
+           
+           
+             function MakeBeads(){
+        
+                 for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if( Math.sqrt( ( Size/2 - (j*3 - Size*.15) )**2 + (Size/2 - (i*3 -Size*.15))**2 ) < (Size/2)  || Math.sqrt( ( Size/2 - (j*3 - Size*1.9))**2 + (Size/2 - (i*3 - Size*1.9)  )**2 ) < Size/2 || Math.sqrt( ( Size/2 - (j*3 - Size*1.02))**2 + (Size/2 - (i*3 - Size*1.02)  )**2 ) < Size/2 || i==j || i==j-1 || i==j+1 || i==j+2 || i==j-2 || i==j+3 || i==j-3 ){ 
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                         colorSquare(i, j);
+                        }
+                       
+                        
+                }
+              
+           }
+           
+           function MakeDiagonal(){
+
+
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(i==j || i==j-1 || i==j+1){
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+
+		}
+           
+           function MakeCircle(){
+
+
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                    	if( Math.sqrt( ( Size/2 - (j*3 - Size))**2 + (Size/2 - (i*3 - Size)  )**2 ) < Size/2){ 
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+
+		}
+		
+	
+	  function MakeDonut(){
+
+
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                    	if( (Math.sqrt( ( Size/2 - (j*3 - 100))**2 + (Size/2 - (i*3 - 100)  )**2 ) < Size/2) &&  (Math.sqrt( ( Size/2 - (j*6 - 250))**2 + (Size/2 - (i*6 - 250)  )**2 ) > Size/2)  ){ 
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+
+		}
            
            
 
