@@ -102,6 +102,15 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 <option>Bipartite</option>
             </select>
             &nbsp; &nbsp;
+             <select id ="patternSelect" onchange = "MakePattern()">
+                <option>(Draw)</option>
+                <option>Draw Cross</option>
+                <option>Draw Thick X</option>
+                <option>Draw Thin X</option>
+                <option>Draw Horizontal</option>
+                <option>Draw Vertical</option>
+            </select>
+            &nbsp; &nbsp;
             Size: <select id="sizeSelect" onchange = "resize()">
                     <option>3</option>
                     <option>4</option>
@@ -193,6 +202,7 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
             var SettleBInput = document.getElementById("SettleB");
             var startButton = document.getElementById("startButton");
             var show = document.getElementById("show"); //for testing purposes
+            var patternSelect = document.getElementById("patternSelect");
             var graphButton = document.getElementById("graphButton")
 
 
@@ -200,7 +210,6 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
             //data
             var InnerLoopCount = 0;
             var StepsPerLoop = Math.pow(10, Number(spfSlider.value)); // this*innerLoopCount rounded to the nearest hundredth = steps that are shown
-
             var Ecurrent = 0.0; //energy of current loops in algorithm
             var EsquaredTotal = 0.0; // declared to calculate sigmaE
             var Etotal = 0.0; //total energy, declared to calculate average energy
@@ -737,6 +746,150 @@ Much of the HTML5 adaptation of this code comes from that of Dan Schroeder (Webe
                 DisplayData();
             }
 
+
+			function MakePattern(){
+				if (patternSelect.value == "Draw Thick X"){
+					return MakeFatX();
+					}
+				if (patternSelect.value == "Draw Thin X"){
+					return MakeThinX();
+					}	
+				if (patternSelect.value == "Draw Cross"){
+					return MakeCross();
+					}
+				if (patternSelect.value == "Draw Horizontal"){
+					return MakeHorizontal();
+					}	
+				if (patternSelect.value == "Draw Vertical"){
+					return MakeVertical();
+					}		
+					}
+		
+				
+						
+			
+
+			 function MakeFatX(){
+               
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(i==j || i==Size-j-1 || i==j-1 || i==Size-j || i==j+1 || i==Size-j+1 || i==j+2 || i==Size-j+2 || i==j+3 || i==Size-j+3 || i==j+4 || i==Size-j+4  || i==j+5 || i==Size-j+5  || i==j+6 || i==Size-j+6  || i==j+7|| i==Size-j+7 || i==j+8|| i==Size-j+8 || i==j+9|| i==Size-j+9 || i==j+10|| i==Size-j+10){
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+
+    
+           }
+
+			function MakeThinX(){
+
+
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(i==j || i==Size-j-1){
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+
+}
+           
+            function MakeCross(){
+            
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(i==(Size/2) -1 || j==(Size/2) -1 || i==(Size/2) || j==(Size/2) || i==(Size/2) -2 || j==(Size/2) -2 || i==(Size/2) +1 || j==(Size/2) +1|| i==(Size/2) +2 || j==(Size/2) +2 ){
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                        colorSquare(i, j);
+                        }
+                }
+               
+
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+
+              
+           }
+           
+           
+            function MakeHorizontal(){
+        
+                for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(Math.abs((Size/2)-i)<10){ 
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                         colorSquare(i, j);
+                        }
+                       
+                        
+                }
+               
+
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+
+              
+           }
+           
+             function MakeVertical(){
+        
+                 for(var i = 0; i < Size; i++){
+                    for(var j = 0; j < Size; j++){
+                        if(Math.abs((Size/2)-j)<10){ 
+                        s[i][j] = 1;
+                        }
+                        else{
+                        s[i][j] = -1;
+                        }
+                         colorSquare(i, j);
+                        }
+                       
+                        
+                }
+               
+
+                if (metropolis)
+                    ComputeEforMetropolis();
+                else
+                    ComputeEforKawasaki();
+
+              
+           }
+           
+           
 
            //makes a nanotube of set spins shown in dark yellow or blue
            function makeNanotube(){
